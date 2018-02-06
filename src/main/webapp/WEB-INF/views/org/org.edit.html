@@ -1,0 +1,200 @@
+<%var header={%>
+<link rel="stylesheet"
+	href="${base}/static/plugins/datepicker/datepicker3.css">
+<%};%> <%var script={%>
+
+<script src="${base}/static/plugins/datepicker/bootstrap-datepicker.js"></script>
+<script src="${base}/static/plugins/input-mask/jquery.inputmask.js"></script>
+<script
+	src="${base}/static/plugins/input-mask/jquery.inputmask.date.extensions.js"></script>
+<script
+	src="${base}/static/plugins/input-mask/jquery.inputmask.extensions.js"></script>
+
+<script type="text/javascript">
+	$(function() {
+
+		//$("#datemask").inputmask("yyyy-mm-dd", {"placeholder": "yyyy-mm-dd"});
+		$("input[name='model.collect_finish_date']").datepicker({
+			autoclose : true,
+			format : 'yyyy-mm-dd'
+		});
+		$("input[name='model.invest_date']").datepicker({
+			autoclose : true,
+			format : 'yyyy-mm-dd'
+		});
+		//Red color scheme for iCheck
+		var serversCheckbox = $(
+				'input[type="checkbox"].minimal, input[type="radio"].minimal')
+				.iCheck({
+					checkboxClass : 'icheckbox_minimal-red',
+					radioClass : 'iradio_minimal-red'
+				});
+
+		// jquery.validate 自定义校验 “英文字母开头，只含有英文字母、数字和下划线”
+		jQuery.validator.addMethod("myValid01", function(value, element) {
+			var length = value.length;
+			var valid = /^[a-z][a-zA-Z0-9-_]*$/;
+			return this.optional(element) || valid.test(value);
+		}, "限制以小写字母开头，由小写字母、数字和下划线组成");
+
+		var addModalValidate = $("#fileupload").validate({
+			errorElement : 'span',
+			errorClass : 'help-block',
+			focusInvalid : true,
+			rules : {
+				"model.org_cn_name" : {
+					required : true,
+					rangelength : [ 1, 164 ]
+				}
+			},
+			messages : {
+				"model.org_cn_name" : {
+					required : "请输入机构名称",
+					rangelength : "名称长度限制为1~164"
+				}
+			},
+			highlight : function(element) {
+				$(element).closest('.form-group').addClass('has-error');
+			},
+			success : function(label) {
+				label.closest('.form-group').removeClass('has-error');
+				label.remove();
+			},
+			errorPlacement : function(error, element) {
+				element.parent('div').append(error);
+			}
+		});
+	});
+</script>
+<%};%> <%
+layout("../inc/inc.macro.html",{title:'机构管理',header:header,script:script}){
+%>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+	<!-- Content Header (Page header) -->
+	<section class="content-header">
+		<h1>
+			机构管理<small>机构编辑</small>
+		</h1>
+	</section>
+
+	<!-- Main content -->
+	<section class="content">
+
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="box">
+
+					<div class="box-body">
+
+						<!-- Main content -->
+						<section class="content">
+							<div class="row">
+								<div class="col-xs-12">
+
+									<form id="fileupload" action="${base}/org/update" method="POST"
+										class="form-horizontal form" role="form"
+										novalidate="novalidate">
+										<input type="hidden" value="${model.org_id}"
+											name="model.org_id" />
+										<div class="form-group">
+											<label for="lastname" class="col-sm-2 control-label">机构编号</label>
+											<div class="col-sm-1">
+												<label for="lastname" class="col-sm-1 control-label">${model.org_id}</label>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label for="lastname" class="col-sm-2 control-label">机构名称<font
+												color="red">*</font></label>
+											<div class="col-sm-10">
+												<input type="text" class="form-control"
+													name="model.org_cn_name" value="${model.org_cn_name}"
+													placeholder="请输入机构名称">
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label for="lastname" class="col-sm-2 control-label">机构别名</label>
+											<div class="col-sm-10">
+												<input type="text" class="form-control"
+													name="model.org_nickname" value="${model.org_nickname}"
+													placeholder="请输入机构别名">
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label for="lastname" class="col-sm-2 control-label">机构简称</label>
+											<div class="col-sm-10">
+												<input type="text" class="form-control"
+													name="model.org_cn_short" value="${model.org_cn_short}"
+													placeholder="请输入机构简称">
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label for="lastname" class="col-sm-2 control-label">英文名称</label>
+											<div class="col-sm-10">
+												<input type="text" class="form-control"
+													name="model.org_en_name" value="${model.org_en_name}"
+													placeholder="请输入英文名称">
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label for="lastname" class="col-sm-2 control-label">对应实体</label>
+											<div class="col-sm-10">
+												<input type="text" class="form-control"
+													name="model.org_map_entity" value="${model.org_map_entity}"
+													placeholder="请输入对应实体">
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label for="lastname" class="col-sm-2 control-label">基金信息</label>
+											<div class="col-sm-10">
+												<input type="text" class="form-control"
+													name="model.fund_info" value="${model.fund_info}"
+													placeholder="请输入基金信息">
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label for="lastname" class="col-sm-2 control-label">投资信息</label>
+											<div class="col-sm-10">
+												<input type="text" class="form-control"
+													name="model.invest_info" value="${model.invest_info}"
+													placeholder="请输入投资信息">
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label for="lastname" class="col-sm-2 control-label">机构描述</label>
+											<div class="col-sm-10">
+												<textarea rows="4" class="form-control"
+													name="model.org_cn_desc">${model.org_cn_desc}</textarea>
+											</div>
+										</div>
+
+
+										<div class="box-footer">
+											<button type="submit" id="btnSync" class="btn btn-primary">${model.org_id
+												== null ? "新增" :"更新"}</button>
+										</div>
+
+
+									</form>
+								</div>
+							</div>
+						</section>
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+
+<% }; %>

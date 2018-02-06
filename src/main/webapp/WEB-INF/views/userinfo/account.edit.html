@@ -1,0 +1,205 @@
+<%var header={%> 
+
+<%};%> 
+
+<%var script={%>
+
+<script src="${base}/static/plugins/input-mask/jquery.inputmask.js"></script>
+<script src="${base}/static/plugins/input-mask/jquery.inputmask.date.extensions.js"></script>
+<script src="${base}/static/plugins/input-mask/jquery.inputmask.extensions.js"></script>
+
+<script type="text/javascript">
+	$(function() {
+		
+		//$("#datemask").inputmask("yyyy-mm-dd", {"placeholder": "yyyy-mm-dd"});
+		 $("input[name='model.collect_finish_date']").datepicker({autoclose: true,format: 'yyyy-mm-dd'});
+		 $("input[name='model.invest_date']").datepicker({autoclose: true,format: 'yyyy-mm-dd'});
+		//Red color scheme for iCheck
+		var serversCheckbox = $(
+				'input[type="checkbox"].minimal, input[type="radio"].minimal')
+				.iCheck({
+					checkboxClass : 'icheckbox_minimal-red',
+					radioClass : 'iradio_minimal-red'
+				});
+
+
+		// jquery.validate 自定义校验 “英文字母开头，只含有英文字母、数字和下划线”
+		jQuery.validator.addMethod("myValid01", function(value, element) {
+			var length = value.length;
+			var valid = /^[a-z][a-zA-Z0-9-_]*$/;
+			return this.optional(element) || valid.test(value);
+		}, "限制以小写字母开头，由小写字母、数字和下划线组成");
+
+
+		var addModalValidate = $("#fileupload").validate(
+						{
+							errorElement : 'span',
+							errorClass : 'help-block',
+							focusInvalid : true,
+							rules : {
+								"model.cn_name" : {
+									required : true,
+									rangelength : [ 1, 164 ]
+								}
+							},
+							messages : {
+								"model.cn_name" : {
+									required : "请输入账户名称",
+									rangelength : "名称长度限制为1~164"
+								}
+							},
+							highlight : function(element) {
+								$(element).closest('.form-group').addClass(
+										'has-error');
+							},
+							success : function(label) {
+								label.closest('.form-group').removeClass(
+										'has-error');
+								label.remove();
+							},
+							errorPlacement : function(error, element) {
+								element.parent('div').append(error);
+							}
+						});
+	});
+	
+	/* 机构 */
+	var addOrg = function(){
+		top.jBox.open("iframe:${base}/org/list_less?model=jbox", "添加机构",$(document).width()/1.3,$(window).height()/1.3,{
+			buttons:{"确定":true}, loaded:function(h){
+				$(".jbox-content", top.document).css("overflow-y","hidden");
+			}
+		});
+	}
+	function flushOrg(id,name,shortName){
+		$("input[name='model.org_id']").val(id);
+		$("input[name='model.org_name']").val(name);
+		/* $("input[name='model.org_info']").val(shortName); */
+		$(".jbox-close").click();
+	}
+</script>
+<%};%> 
+
+<% layout("../inc/inc.macro.html",{title:'账户管理',header:header,script:script}){ %>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+	<!-- Content Header (Page header) -->
+	<section class="content-header">
+		<h1>
+			账户管理<small>账户编辑</small>
+		</h1>
+	</section>
+
+	<!-- Main content -->
+	<section class="content">
+
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="box">
+
+					<div class="box-body">
+					
+					<!-- Main content -->
+			<section class="content">
+				<div class="row">
+					<div class="col-xs-12">
+					
+					<form id="fileupload" action="${base}/userinfo/update" method="POST" class="form-horizontal form" role="form" novalidate="novalidate">
+						
+						<div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">账号<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.uid" value="${model.uid}" placeholder=""></div>
+                        </div>
+						
+						<div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">账户姓名<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.cn_name" value="${model.cn_name}" placeholder="请输入账户名称"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">账户类型<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.type" value="${model.type}" placeholder="个人、机构"></div>
+                        </div>
+                        
+                        <fieldset>
+                        <legend>机构 <button type="button" class="btn btn-default btn-xs pull-right" onclick="addOrg()">选择机构<i class="fa fa-search"></i></button> </legend>
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">机构ID<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" id="orgId" class="form-control" name="model.org_id" value="${model.org_id}" placeholder="org_id"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">机构名称<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" id="orgName" class="form-control" name="model.org_name" value="${model.org_name}" placeholder="org_cn_name"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">机构信息</label>
+                            <div class="col-sm-10"><input type="text" id="orgInfo" class="form-control" name="model.org_info" value="${model.org_info}" placeholder="org_info"></div>
+                        </div>
+                        </fieldset>
+                        
+                       <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">性别<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.sex" value="${model.sex}" placeholder="用户性别 1--女；2--男"></div>
+                        </div>
+                        
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">职位<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.level" value="${model.level}" placeholder=""></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">个人信息</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.people_info" value="${model.people_info}" placeholder="people_info"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">关注领域<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.domain_tips" value="${model.domain_tips}" placeholder="关注领域用英文逗号分隔"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">电话<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.telephone" value="${model.telephone}" placeholder=""></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">邮箱<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.mail" value="${model.mail}" placeholder=""></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">企业信息</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.venture_tips" value="${model.venture_tips}" placeholder="venture_tips"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">其他信息</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.other_tips" value="${model.other_tips}" placeholder="other_tips"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">积分</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.score" value="${model.score}" placeholder="score"></div>
+                        </div>
+                        
+							<div class="box-footer">
+								<button type="submit" id="btnSync" class="btn btn-primary">${update! == "true" ? "更新" :"新增"} </button>
+							</div>
+
+						
+						</form>
+					</div>
+				</div>
+			</section>
+					
+					
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+
+<% }; %>

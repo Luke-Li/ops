@@ -1,0 +1,208 @@
+<%var header={%> 
+	<link rel="stylesheet" href="${base}/static/plugins/datepicker/datepicker3.css">
+<%};%> 
+
+<%var script={%>
+
+<script src="${base}/static/plugins/datepicker/bootstrap-datepicker.js"></script>
+<script src="${base}/static/plugins/input-mask/jquery.inputmask.js"></script>
+<script src="${base}/static/plugins/input-mask/jquery.inputmask.date.extensions.js"></script>
+<script src="${base}/static/plugins/input-mask/jquery.inputmask.extensions.js"></script>
+<script src="${base}/static/js/opstool/user.edit.js"></script>
+
+<script type="text/javascript">
+	$(function() {
+		
+		//$("#datemask").inputmask("yyyy-mm-dd", {"placeholder": "yyyy-mm-dd"});
+		 $("input[name='model.collect_finish_date']").datepicker({autoclose: true,format: 'yyyy-mm-dd'});
+		 $("input[name='model.invest_date']").datepicker({autoclose: true,format: 'yyyy-mm-dd'});
+		//Red color scheme for iCheck
+		var serversCheckbox = $(
+				'input[type="checkbox"].minimal, input[type="radio"].minimal')
+				.iCheck({
+					checkboxClass : 'icheckbox_minimal-red',
+					radioClass : 'iradio_minimal-red'
+				});
+
+
+		// jquery.validate 自定义校验 “英文字母开头，只含有英文字母、数字和下划线”
+		jQuery.validator.addMethod("myValid01", function(value, element) {
+			var length = value.length;
+			var valid = /^[a-z][a-zA-Z0-9-_]*$/;
+			return this.optional(element) || valid.test(value);
+		}, "限制以小写字母开头，由小写字母、数字和下划线组成");
+
+
+		var addModalValidate = $("#fileupload").validate(
+						{
+							errorElement : 'span',
+							errorClass : 'help-block',
+							focusInvalid : true,
+							rules : {
+								"model.user_name" : {
+									required : true,
+									rangelength : [ 1, 164 ]
+								}
+							},
+							messages : {
+								"model.user_name" : {
+									required : "请输入名称",
+									rangelength : "名称长度限制为1~164"
+								}
+							},
+							highlight : function(element) {
+								$(element).closest('.form-group').addClass(
+										'has-error');
+							},
+							success : function(label) {
+								label.closest('.form-group').removeClass(
+										'has-error');
+								label.remove();
+							},
+							errorPlacement : function(error, element) {
+								element.parent('div').append(error);
+							}
+						});
+	});
+	
+</script>
+<%};%> 
+
+<% layout("../inc/inc.macro.html",{title:'机构任务管理',header:header,script:script}){ %>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+	<!-- Content Header (Page header) -->
+	<section class="content-header">
+		<h1>
+			机构任务管理<small>机构人物编辑</small>
+		</h1>
+	</section>
+
+	<!-- Main content -->
+	<section class="content">
+
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="box">
+
+					<div class="box-body">
+					
+					<!-- Main content -->
+			<section class="content">
+				<div class="row">
+					<div class="col-xs-12">
+					
+					<form id="fileupload" action="${base}/user/update" method="POST" class="form-horizontal form" role="form" novalidate="novalidate">
+						<input type="hidden" value="${model.id}" name="model.id"/>
+						<div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">ID</label>
+                            <div class="col-sm-1"><label for="lastname" class="col-sm-1 control-label">${model.id}</label></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">人物编号<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.user_id" value="${model.user_id}" placeholder="请输入人物编号"></div>
+                        </div>
+						
+						<div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">人物名称<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.user_name" value="${model.user_name}" placeholder="请输入人物名称"></div>
+                        </div>
+                        
+                        <!-- <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">机构ID</label>
+                            <div class="col-sm-10"><input type="text" id="orgId" class="form-control" name="model.organize_id" value="${model.organize_id}" placeholder="请输入机构ID"></div>
+                            <div style="padding-top:5px;padding-left:3px;float:right;">
+                               	 <i onclick="orgSearchById()" class="fa fa-search"></i>
+                           	</div>
+                        </div>
+                        
+                       <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">机构名称</label>
+                            <div class="col-sm-10"><input type="text" id="orgName" class="form-control" name="model.organize_name" value="${model.organize_name}" placeholder="请输入机构名称"></div>
+                            <div style="padding-top:5px;padding-left:3px;float:right;">
+                               	 <i onclick="orgSearchByName()" class="fa fa-search"></i>
+                           	</div>
+                        </div> -->
+                        <fieldset>
+                        <legend>机构 <button type="button" class="btn btn-default btn-xs pull-right" onclick="addOrg()">选择机构<i class="fa fa-search"></i></button> </legend>
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">机构ID</label>
+                            <div class="col-sm-10"><input type="text" id="orgId" class="form-control" name="model.organize_id" value="${model.organize_id}" placeholder="organize_id"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">机构名称</label>
+                            <div class="col-sm-10"><input type="text" id="orgName" class="form-control" name="model.organize_name" value="${model.organize_name}" placeholder="organize_name"></div>
+                        </div>
+                        <legend> </legend>
+                        </fieldset>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">人物性别</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.sex" value="${model.sex}" placeholder="男、女"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">人物职位</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.title" value="${model.title}" placeholder="请输职位"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">关注领域</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.focus_domain" value="${model.focus_domain}" placeholder="请输关注领域"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">投资项目</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.invest_projects" value="${model.invest_projects}" placeholder="请输投资项目"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">联系方式</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.contact" value="${model.contact}" placeholder="邮箱或电话"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">人物描述</label>
+                            <div class="col-sm-10"><textarea rows="4" class="form-control" name="model.description">${model.description}</textarea></div>
+                        </div>
+
+
+							<div class="box-footer">
+								<button type="submit" id="btnSync" class="btn btn-primary">${model.id == null ? "新增" :"更新"} </button>
+							</div>
+
+						
+						</form>
+					</div>
+				</div>
+			</section>
+					
+					
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+
+<% }; %>
+
+<script type="text/javascript">
+/* 机构 */
+	var addOrg = function(){
+		top.jBox.open("iframe:${base}/org/list_less?model=jbox", "添加机构",$(document).width()/1.3,$(window).height()/1.3,{
+			buttons:{"确定":true}, loaded:function(h){
+				$(".jbox-content", top.document).css("overflow-y","hidden");
+			}
+		});
+	}
+	
+	function flushOrg(id,name,shortName){
+		$("input[name='model.organize_id']").val(id);
+		$("input[name='model.organize_name']").val(name);
+		/*$("input[name='model.org_cn_short']").val(shortName);*/
+		$(".jbox-close").click();
+	}
+</script>

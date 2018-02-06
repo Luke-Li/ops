@@ -1,0 +1,182 @@
+<%var header={%>
+
+ <%};%>
+ 
+ <%var script={%>
+
+<script type="text/javascript"
+	src="http://jqpaginator.keenwon.com/jqPaginator.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+		//Red color scheme for iCheck
+		var serversCheckbox = $(
+				'input[type="checkbox"].minimal, input[type="radio"].minimal')
+				.iCheck({
+					checkboxClass : 'icheckbox_minimal-red',
+					radioClass : 'iradio_minimal-red'
+				});
+
+		// remove
+		$('.remove').on('click', function() {
+			var title = $(this).attr('title');
+			var uid = $(this).attr('title');
+			ComConfirm.show("确认删除账户：" + title + "?", function() {
+				$.ajax({
+					type : 'POST',
+					url : base_url + '/userinfo/delete',
+					data : {
+						"uid" : uid
+					},
+					dataType : "json",
+					success : function(data) {
+						if (data.code == 200) {
+							ComAlert.show(1, '删除成功', function() {
+								window.location.reload();
+							});
+						} else {
+							if (data.msg) {
+								ComAlert.show(2, data.msg);
+							} else {
+								ComAlert.show(2, '删除失败');
+							}
+						}
+					},
+				});
+			});
+		});
+
+		// password
+		$('.password').on('click', function() {
+			var uid = $(this).attr('id');
+			$.ajax({
+				type : 'POST',
+				url : base_url + '/userinfo/pwd',
+				data : {
+					"uid" : uid
+				},
+				dataType : "json",
+				success : function(data) {
+					if (data.code == 500) {
+						ComAlert.show(2, '没有查到密码');
+					} else {
+						ComAlert.show(1, '密码是：' + data.content);
+					}
+				},
+			});
+		});
+
+		$('.update').on(
+				'click',
+				function() {
+					window.location = base_url
+							+ "/userinfo/edit?update=true&uid="
+							+ $(this).attr('id');
+				});
+
+		$('.add').on('click', function() {
+			window.location = base_url + "/userinfo/edit";
+		});
+
+	});
+</script>
+<%};%> 
+<%
+layout("../inc/inc.macro.html",{title:'账户管理',header:header,script:script}){
+%>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+	<!-- Content Header (Page header) -->
+	<section class="content-header">
+		<h1>
+			账户管理<small>账户列表</small>
+		</h1>
+	</section>
+
+	<!-- Main content -->
+	<section class="content">
+		<form action="${base}/userinfo/list" method="get" id="listForm">
+			<div class="row">
+				<div class="col-xs-4">
+					<div class="input-group">
+						<span class="input-group-addon input-group-addon-padding-fix">
+							<select id="select" name="type" class="input-sm">
+								<option value="1" ${type! =="1"?"selected":""}>账户ID</option>
+								<option value="2" ${type! =="2"?"selected":""}>账户名称</option>
+								<option value="3" ${type! == "3"?"selected":""}>机构名称</option>
+						</select>
+						</span> <input type="text" class="form-control" id="key"
+							name="key" value="${key!}" autocomplete="on">
+					</div>
+				</div>
+				<div class="col-xs-2">
+					<button class="btn btn-block btn-info" type="submit" id="searchBtn">搜索</button>
+				</div>
+				<div class="col-xs-2">
+					<button class="btn btn-block btn-success add" type="button">+新增账户</button>
+				</div>
+			</div>
+		</form>
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="box">
+					<div class="box-header">
+						<h3 class="box-title">列表</h3>
+						&nbsp;&nbsp;
+						<button class="btn btn-info btn-xs pull-left2 add">+新增账户</button>
+						&nbsp;&nbsp;&nbsp;&nbsp; 调度中心OnLine:<span class="badge bg-green">192.168.0.70:8888</span>
+					</div>
+					<div class="box-body">
+						<table id="joblog_list"
+							class="table table-bordered table-striped display" width="100%">
+							<thead>
+								<tr>
+									<th>账户ID</th>
+									<th>名称</th>
+									<th>账户类型</th>
+									<th>机构名称</th>
+									<th>职位</th>
+									<th>邮箱</th>
+								</tr>
+							</thead>
+							<tbody>
+								<%for(item in page.list! ){%>
+								<tr>
+									<td>${item.uid}</td>
+									<td>${item.cn_name}</td>
+									<td>${item.type}</td>
+									<td>${item.org_name}</td>
+									<td>${item.level}</td>
+									<td>${item.mail}</td>
+									<td>
+										<button class="btn btn-info btn-xs password"
+											id="${item.uid}">密码</button>
+										<button class="btn btn-warning btn-xs update" id="${item.uid}">编辑</button>
+										<button class="btn btn-danger btn-xs remove" id="${item.uid}"
+											title="${item.uid}">删除</button> <a
+										class="btn btn-info btn-xs" role="button" id="${item.uid}"
+										href="${base}/userinfo/edit?uid=${item.uid}&model=copy">复制</a>
+									</td>
+								</tr>
+								<%}elsefor{
+									print("<tr><td colspan=\"8\">没有查询到数据！</td></tr>");
+								}%>
+
+								</tbody>
+							</table>
+							
+							<hr>
+														
+								<% include("../inc/inc.paginate.html",{}){}; %>
+							
+							</div>
+				</div>
+			</div>
+		</div>
+
+
+
+	</section>
+</div>
+
+<% }; %>

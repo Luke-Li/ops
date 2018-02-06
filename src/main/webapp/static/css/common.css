@@ -1,0 +1,8 @@
+/* 修正输入框的padding数值 */
+.input-group-addon-padding-fix{
+  padding: 1px 2px 1px 2px;
+}
+/* 输入框的 select处理 
+.input-group-addon select{
+  height: 30px;
+}*/

@@ -1,0 +1,159 @@
+<%var header={%>
+	
+<%};%>
+
+<%var script={%>
+
+<script type="text/javascript" src="http://jqpaginator.keenwon.com/jqPaginator.min.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			//Red color scheme for iCheck
+		    var serversCheckbox = $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
+		      checkboxClass: 'icheckbox_minimal-red',
+		      radioClass: 'iradio_minimal-red'
+		    });
+			
+			// remove
+			$('.remove').on('click', function(){
+				var title = $(this).attr('title');
+				var id = $(this).attr('id');
+				ComConfirm.show("确认删除投资事件："+title+"?", function(){
+					$.ajax({
+						type : 'POST',
+						url : base_url + '/invest/delete',
+						data : {"id":id},
+						dataType : "json",
+						success : function(data){
+							if (data.code == 200) {
+								ComAlert.show(1, '删除成功',function(){
+									window.location.reload();
+								});
+							} else {
+								if (data.msg) {
+									ComAlert.show(2, data.msg);
+								} else {
+									ComAlert.show(2, '删除失败');
+								}
+							}
+						},
+					});
+				});
+			});
+		
+			$('.update').on('click', function(){
+				window.location = base_url+"/invest/edit?id="+$(this).attr('id');
+			});
+		
+			$('.add').on('click', function(){
+				window.location = base_url+"/invest/edit";
+			});
+			
+
+		});
+		
+	</script>
+<%};%>
+
+<%
+layout("../inc/inc.macro.html",{title:'投资事件管理',header:header,script:script}){
+%>
+
+<!-- Content Wrapper. Contains page content -->
+	<div class="content-wrapper">
+		<!-- Content Header (Page header) -->
+		<section class="content-header">
+			<h1>投资事件管理<small>投资事件列表</small></h1>
+		</section>
+
+		<!-- Main content -->
+	    <section class="content">
+			<form action="${base}/invest/list" method="get" id="listForm">
+			<div class="row">
+                <div class="col-xs-4">
+                    <div class="input-group">
+                    	<span class="input-group-addon input-group-addon-padding-fix">
+                        <select id="select" name="type" class="input-sm">
+						  <option value ="1" ${type! == "1"?"selected":""}>事件ID</option>
+						  <option value ="2" ${type! == "2"?"selected":""}>企业ID</option>
+						  <option value ="3" ${type! == "3"?"selected":""}>企业名称</option>
+						  <option value ="4" ${type! == "4"?"selected":""}>基金名称</option>
+						  <option value ="5" ${type! == "5"?"selected":""}>人物名称</option>
+						</select>
+						</span>
+                        <input type="text" class="form-control" id="key" name="key" value="${key!}" autocomplete="on">
+                    </div>
+                </div>
+                
+	            <div class="col-xs-2">
+	            	<button class="btn btn-block btn-info" type="submit" id="searchBtn">搜索</button>
+	            </div>
+	            <div class="col-xs-2">
+	            	<button class="btn btn-block btn-success add" type="button">+新增事件</button>
+	            </div>
+          	</div>
+			</form>
+			<div class="row">
+				<div class="col-xs-12">
+					<div class="box">
+			            <div class="box-header">
+							<h3 class="box-title">列表</h3>&nbsp;&nbsp;
+                            <button class="btn btn-info btn-xs pull-left2 add" >+新增事件</button>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            调度中心OnLine:<span class="badge bg-green">192.168.0.70:8888</span>
+						</div>
+			            <div class="box-body">
+			              	<table id="joblog_list" class="table table-bordered table-striped display" width="100%" >
+				                <thead>
+					            	<tr>
+                                        <th >事件ID</th>
+					                  	<th >事件标题</th>
+                                        <th >发生时间</th>
+                                        <th >投资轮次</th>
+                                        <th >企业名称</th>
+                                        <th >机构名称</th>
+                                        <th >基金名称</th>
+                                        <th >管理人</th>
+					                </tr>
+				                </thead>
+                                <tbody>
+                                
+                                
+                                <%for(item in page.list! ){%>
+									<tr>
+                                        <td>${item.event_id}</td>
+                                        <td>${item.event_title}</td>
+                                        <td>${item.happen_date}</td>
+                                        <td>${item.invest_type}</td>
+                                        <td>${item.ent_cn_name}</td>
+                                        <td>${item.org_cn_name}</td>
+                                        <td>${item.fund_name}</td>
+                                        <td>${item.user_name}</td>
+										<td>
+                                            <button class="btn btn-warning btn-xs update" id="${item.event_id}">编辑</button>
+                                            <button class="btn btn-danger btn-xs remove"  id="${item.event_id}" title="${item.event_title}">删除</button>
+                                            
+                                            <a class="btn btn-info btn-xs" role="button" id="${item.event_id}" href="${base}/invest/edit?id=${item.event_id}&model=copy">复制</a>
+										</td>
+									</tr>
+								<%}elsefor{
+									print("<tr><td colspan=\"8\">没有查询到数据！</td></tr>");
+								}%>
+
+								</tbody>
+							</table>
+							
+							<hr>
+														
+								<% include("../inc/inc.paginate.html",{}){}; %>
+							
+							</div>
+					</div>
+				</div>
+			</div>
+			
+			
+			
+	    </section>
+	</div>
+
+<% }; %>

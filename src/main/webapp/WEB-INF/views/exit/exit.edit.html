@@ -1,0 +1,363 @@
+<%var header={%> 
+	<link rel="stylesheet" href="${base}/static/plugins/datepicker/datepicker3.css">
+	<!-- <link rel="stylesheet" href="${base}/static/plugins/typeahead/typeahead.css"> -->
+	<style type="text/css">
+		#exitDiv div.col-sm-1{margin: 0 0 8px 0;cursor:pointer;}
+	</style>
+<%};%> 
+
+<%var script={%>
+
+<script src="${base}/static/plugins/typeahead/bootstrap3-typeahead.js"></script>
+<!-- <script src="${base}/static/plugins/typeahead/typeahead.bundle.js"></script> -->
+<script src="${base}/static/js/opstool/invest.edit.js"></script>
+
+<script type="text/javascript">
+	$(function() {
+				
+		//$("#datemask").inputmask("yyyy-mm-dd", {"placeholder": "yyyy-mm-dd"});
+		 $("input[name='model.happen_date']").datepicker({autoclose: true,format: 'yyyy-mm-dd',todayHighlight:true});
+		 $("input[name='model.first_invest_date']").datepicker({autoclose: true,format: 'yyyy-mm-dd'});
+		//Red color scheme for iCheck
+		var serversCheckbox = $(
+				'input[type="checkbox"].minimal, input[type="radio"].minimal')
+				.iCheck({
+					checkboxClass : 'icheckbox_minimal-red',
+					radioClass : 'iradio_minimal-red'
+				});
+
+		
+		
+
+		// jquery.validate 自定义校验 “英文字母开头，只含有英文字母、数字和下划线”
+		jQuery.validator.addMethod("myValid01", function(value, element) {
+			var length = value.length;
+			var valid = /^[a-z][a-zA-Z0-9-_]*$/;
+			return this.optional(element) || valid.test(value);
+		}, "限制以小写字母开头，由小写字母、数字和下划线组成");
+
+
+		var addModalValidate = $("#fileupload").validate(
+						{
+							errorElement : 'span',
+							errorClass : 'help-block',
+							focusInvalid : true,
+							rules : {
+								"model.event_title" : {
+									required : true,
+									rangelength : [ 1, 164 ]
+								}
+							},
+							messages : {
+								"model.event_title" : {
+									required : "请输入事件名称",
+									rangelength : "名称长度限制为1~164"
+								}
+							},
+							highlight : function(element) {
+								$(element).closest('.form-group').addClass(
+										'has-error');
+							},
+							success : function(label) {
+								label.closest('.form-group').removeClass(
+										'has-error');
+								label.remove();
+							},
+							errorPlacement : function(error, element) {
+								element.parent('div').append(error);
+							}
+						});
+		
+		
+		 
+		/* 自动完成 */
+		var states = ["被并购/被收购","上市","转让","同业转售","减持","分红","清算"];
+		$("input[name='model.exit_type']").typeahead({source:states,autoSelect: true,minLength:0,items:15});
+		var name2Id={};
+        $("input[name='model.ent_cn_name']").typeahead({
+            source: function (query, process) {
+                //query是输入的值
+                $.post("${base}/ent/query_ent", { name: query }, function (e) {
+                        if (e.length != 0) { 
+                            var array = [];
+                            $.each(e, function (index, ele) {
+                                name2Id[ele.key] = ele.value;//键值对保存下来。
+                                array.push(ele.key);
+                            });
+                            process(array);	
+                        }                
+                });
+            },
+            items: 8,
+            afterSelect: function (item) {
+            	$("input[name='model.ent_uuid']").val(name2Id[item]);//打印对应的id
+            },
+            delay: 500
+        });
+    	
+        /* label 处理 */
+        
+        
+        var exitDiv = $("#exitDiv");
+        $.each(states, function (index, ele) {
+        	exitDiv.append($('<div class="col-sm-1"><span class="label label-primary">'+ele+'</span></div>').bind("click",function(){
+        		$("input[name='model.exit_type']").val($(this).children(":first").text());
+        	}));
+        });
+        
+	});
+	
+	/* 打开新窗口选择对象 */
+	/* 基金 */
+	function flushFund(id,title){
+		$("#fundId").val(id);
+		$("#fundName").val(title);
+		$(".jbox-close").click();
+	}
+	var addFund = function(){
+		top.jBox.open("iframe:${base}/fund/list_less?model=jbox", "添加基金",$(document).width()/1.3,$(window).height()/1.3,{
+			buttons:{"确定":true}, loaded:function(h){
+				$(".jbox-content", top.document).css("overflow-y","hidden");
+			}
+		});
+	}
+	/* 企业 */
+	function flushEnt(uuid,name){
+		$("input[name='model.ent_uuid']").val(uuid);
+		$("input[name='model.ent_cn_name']").val(name);
+		$(".jbox-close").click();
+	}
+	
+	var addEnt = function(){
+		top.jBox.open("iframe:${base}/ent/list_less?model=jbox", "添加企业",$(document).width()/1.3,$(window).height()/1.3,{
+			buttons:{"确定":true}, loaded:function(h){
+				$(".jbox-content", top.document).css("overflow-y","hidden");
+			}
+		});
+	}
+	/* 管理人 */
+	var addUser = function(){
+		top.jBox.open("iframe:${base}/user/list_less?model=jbox", "添加管理人",$(document).width()/1.3,$(window).height()/1.3,{
+			buttons:{"确定":true}, loaded:function(h){
+				$(".jbox-content", top.document).css("overflow-y","hidden");
+			}
+		});
+	}
+	function flushUser(id,name,org_id,org_name){
+		$("input[name='model.user_id']").val(id);
+		$("input[name='model.user_name']").val(name);
+		$("input[name='model.org_id']").val(org_id);
+		$("input[name='model.org_cn_name']").val(org_name);
+		orgSearchById();
+		$(".jbox-close").click();
+	}
+	/* 机构 */
+	var addOrg = function(){
+		top.jBox.open("iframe:${base}/org/list_less?model=jbox", "添加机构",$(document).width()/1.3,$(window).height()/1.3,{
+			buttons:{"确定":true}, loaded:function(h){
+				$(".jbox-content", top.document).css("overflow-y","hidden");
+			}
+		});
+	}
+	function flushOrg(id,name,shortName){
+		$("input[name='model.org_id']").val(id);
+		$("input[name='model.org_cn_name']").val(name);
+		$("input[name='model.org_cn_short']").val(shortName);
+		$(".jbox-close").click();
+	}
+</script>
+<%};%> 
+
+<% layout("../inc/inc.macro.html",{title:'退出事件',header:header,script:script}){ %>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+	<!-- Content Header (Page header) -->
+	<section class="content-header">
+		<h1>
+			退出事件管理<small>退出事件编辑</small>
+		</h1>
+	</section>
+
+	<!-- Main content -->
+	<section class="content">
+
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="box">
+
+					<div class="box-body">
+					
+					<!-- Main content -->
+			<section class="content">
+				<div class="row">
+					<div class="col-xs-12">
+					
+					<form id="fileupload" action="${base}/exit/update" method="POST" class="form-horizontal form" role="form" novalidate="novalidate">
+						<input type="hidden" value="${model.event_id}" name="model.event_id"/>
+						<div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">事件ID</label>
+                            <div class="col-sm-1"><label for="lastname" class="col-sm-1 control-label">${model.event_id}</label></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">事件名称<font color="red">*</font></label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.event_title" value="${model.event_title}" placeholder="请输入事件名称"></div>
+                        </div>
+						
+						<div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">发生时间</label>
+                            <div class="col-sm-10">
+                            	<div class="input-group date">
+					                  <div class="input-group-addon">
+					                    <i class="fa fa-calendar"></i>
+					                  </div>
+					            		<input type="text" class="form-control" name="model.happen_date" value="${model.happen_date}" placeholder="" data-date-end-date="0d">      
+					                </div>
+                            	
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">退出类型</label>
+                            <div class="col-sm-10"><input type="text" class="form-control typeahead tt-input" name="model.exit_type" value="${model.exit_type}" placeholder="请输入投资类型"></div>
+                        </div>
+                        <div class="form-group">
+                        	<div class="col-sm-2"></div>
+                        	<div class="col-sm-10" id="exitDiv"></div>
+                        </div>
+                        <fieldset>
+                        <legend>企业 <button type="button" class="btn btn-default btn-xs pull-right" onclick="addEnt()">选择企业<i class="fa fa-search"></i></button> </legend>
+                        
+                       <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">企业名称</label>
+                            <div class="col-sm-10">
+                            	<input type="text" autocomplete="off" data-provide="typeahead" class="form-control" id="ent_cn_name" name="model.ent_cn_name" value="${model.ent_cn_name}" placeholder="请输入企业名称">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">企业ID</label>
+                            <div class="col-sm-10">
+                            	<div class="input-group">
+                            		<input type="text" class="form-control" name="model.ent_uuid" id="ent_uuid" value="${model.ent_uuid}" placeholder="uuid">
+                            		<div class="input-group-addon" title="同步UUID" style="cursor:pointer;" onclick="syncUUID('ent_cn_name','ent_uuid')"><span class="glyphicon glyphicon-refresh"></span></div>
+                            	</div>
+                            </div>
+                        </div>
+                        </fieldset>
+                        
+                        <fieldset>
+                        <legend>基金 <button type="button" class="btn btn-default btn-xs pull-right" onclick="addFund()">选择基金<i class="fa fa-search"></i></button> </legend>
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">基金ID</label>
+                            <div class="col-sm-10">
+                            	<input type="text" id="fundId" class="form-control" name="model.fund_id" value="${model.fund_id}" placeholder="fund_id">
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">基金名称</label>
+                            <div class="col-sm-10"><input type="text" id="fundName" class="form-control" name="model.fund_name" value="${model.fund_name}" placeholder="fund_name"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">基金uuid</label>
+                            <div class="col-sm-10">
+                            	<div class="input-group">
+                            	<input type="text" class="form-control" name="model.fund_uuid" id="fundUuid" value="${model.fund_uuid}" placeholder="fund_uuid">
+                            	<div class="input-group-addon" title="同步UUID" style="cursor:pointer;" onclick="syncUUID('fundName','fundUuid')"><span class="glyphicon glyphicon-refresh"></span></div>
+                            	</div>
+                            </div>
+                        </div>
+                        </fieldset>
+                        
+                        <fieldset>
+                        <legend>管理人 <button type="button" class="btn btn-default btn-xs pull-right" onclick="addUser()">选择管理人<i class="fa fa-search"></i></button> </legend>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">管理人ID</label>
+                            <div class="col-sm-10"><input type="text" id="userId" class="form-control" name="model.user_id" value="${model.user_id}" placeholder="user_id"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">管理人</label>
+                            <div class="col-sm-10"><input type="text" id="userName" class="form-control" name="model.user_name" value="${model.user_name}" placeholder="user_name"></div>
+                        </div>
+                        </fieldset>
+                        <fieldset>
+                        <legend>机构 <button type="button" class="btn btn-default btn-xs pull-right" onclick="addOrg()">选择机构<i class="fa fa-search"></i></button> </legend>
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">机构ID</label>
+                            <div class="col-sm-10"><input type="text" id="orgId" class="form-control" name="model.org_id" value="${model.org_id}" placeholder="org_id"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">机构名称</label>
+                            <div class="col-sm-10"><input type="text" id="orgName" class="form-control" name="model.org_cn_name" value="${model.org_cn_name}" placeholder="org_cn_name"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">机构简称</label>
+                            <div class="col-sm-10"><input type="text" id="orgShort" class="form-control" name="model.org_cn_short" value="${model.org_cn_short}" placeholder="org_cn_short"></div>
+                        </div>
+                        </fieldset>
+                        <fieldset>
+                        <legend>其他 </legend>
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">退出总额</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.amount" value="${model.amount}" placeholder="amount"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">持股比例</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.stock_right" value="${model.stock_right}" placeholder="stock_right"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">初次投资时间</label>
+                            <div class="col-sm-10">
+                            	<div class="input-group date">
+					                  <div class="input-group-addon">
+					                    <i class="fa fa-calendar"></i>
+					                  </div>
+					            		<input type="text" class="form-control" name="model.first_invest_date" value="${model.first_invest_date}" placeholder="" data-date-end-date="0d">      
+					                </div>
+                            	
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">账面回报率</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.bring_rate" value="${model.bring_rate}" placeholder="bring_rate"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">账面IRR</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="model.irr" value="${model.irr}" placeholder="irr"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastname" class="col-sm-2 control-label">事件描述</label>
+                            <div class="col-sm-10"><textarea rows="4" class="form-control" name="model.event_desc">${model.event_desc}</textarea></div>
+                        </div>
+</fieldset>
+
+							<div class="box-footer">
+								<button type="submit" id="btnSync" class="btn btn-primary">${model.event_id == null ? "新增" :"更新"} </button>
+							</div>
+
+						
+						</form>
+					</div>
+				</div>
+			</section>
+					
+					
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+
+<% }; %>

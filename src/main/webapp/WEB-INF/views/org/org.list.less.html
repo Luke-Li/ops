@@ -1,0 +1,102 @@
+<%var header={%>
+	
+<%};%>
+
+<%var script={%>
+
+<script type="text/javascript" src="http://jqpaginator.keenwon.com/jqPaginator.min.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			//Red color scheme for iCheck
+		    var serversCheckbox = $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
+		      checkboxClass: 'icheckbox_minimal-red',
+		      radioClass: 'iradio_minimal-red'
+		    });
+		});
+		
+		//
+		var choose = function(id,name,shortName){
+			top.flushOrg(id,name,shortName);
+		}
+		
+	</script>
+<%};%>
+
+<%
+layout("../inc/inc.macro.less.html",{title:'机构管理',header:header,script:script}){
+%>
+
+<!-- Content Wrapper. Contains page content -->
+	<div class="content-wrapper" style="margin-left: 0px">
+		<!-- Main content -->
+	    <section class="content">
+			<form action="${base}/org/list_less" method="get" id="listForm">
+			<div class="row">
+                <div class="col-xs-4">
+                    <div class="input-group">
+                        <span class="input-group-addon input-group-addon-padding-fix">
+                        <select id="select" name="type" class="input-sm">
+						  <option value ="1" ${type! == "1"?"selected":""}>机构ID</option>
+						  <option value="2" ${type! == "2"?"selected":""}>机构名称</option>
+						</select>
+						</span>
+                        <input type="text" class="form-control" id="orgName" name="orgName" value="${orgName!}" autocomplete="on">
+                    </div>
+                </div>
+	            <div class="col-xs-2">
+	            	<button class="btn btn-block btn-info" type="submit" id="searchBtn">搜索</button>
+	            </div>
+          	</div>
+			</form>
+			<div class="row">
+				<div class="col-xs-12">
+					<div class="box">
+			            <div class="box-header">
+							<h3 class="box-title">列表</h3>&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            调度中心OnLine:<span class="badge bg-green">192.168.0.70:8888</span>
+						</div>
+			            <div class="box-body">
+			              	<table id="joblog_list" class="table table-bordered table-striped display" width="100%" >
+				                <thead>
+					            	<tr>
+                                        <th >ID</th>
+					                  	<th >名称</th>
+                                        <th >简称</th>
+                                        <th >描述</th>
+                                        <th >操作</th>
+					                </tr>
+				                </thead>
+                                <tbody>
+                                <%for(item in page.list! ){%>
+									<tr>
+                                        <td>${item.org_id}</td>
+                                        <td>${item.org_cn_name}</td>
+                                        <td>${item.org_cn_short}</td>
+                                        <td style="max-width: 300px;overflow-x: hidden;">${strutil.length(item.org_cn_desc!"")>50 ? strutil.subStringTo(item.org_cn_desc,0,47)+"...":item.org_cn_desc }</td>
+										<td>
+											<button class="btn btn-danger btn-xs" onclick="choose('${item.org_id}','${item.org_cn_name}','${item.org_cn_short}')">选择</button>
+										</td>
+									</tr>
+								<%}elsefor{
+									print("<tr><td colspan=\"8\">没有查询到数据！</td></tr>");
+								}%>
+
+								</tbody>
+							</table>
+							
+							<hr>
+														
+								<% include("../inc/inc.paginate.html",{}){}; %>
+							
+							</div>
+					</div>
+				</div>
+			</div>
+			
+			
+			
+	    </section>
+	</div>
+
+<% }; %>
